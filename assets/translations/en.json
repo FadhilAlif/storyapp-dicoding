@@ -1,6 +1,7 @@
 {
   "app_title": "Story App",
   "login_title": "Login",
+  "login_page": "Login Page",
   "register_title": "Register",
   "home_title": "Stories",
   "detail_title": "Story Detail",

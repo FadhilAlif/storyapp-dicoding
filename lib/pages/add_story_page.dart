@@ -40,7 +40,7 @@ class _AddStoryPageState extends State<AddStoryPage> {
                 leading: const Icon(Icons.photo_library),
                 title: Text(tr('gallery_option')),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  context.pop();
                   _pickImage(ImageSource.gallery);
                 },
               ),
@@ -48,7 +48,7 @@ class _AddStoryPageState extends State<AddStoryPage> {
                 leading: const Icon(Icons.photo_camera),
                 title: Text(tr('camera_option')),
                 onTap: () {
-                  Navigator.of(context).pop();
+                  context.pop();
                   _pickImage(ImageSource.camera);
                 },
               ),
@@ -57,6 +57,38 @@ class _AddStoryPageState extends State<AddStoryPage> {
         );
       },
     );
+  }
+
+  Future<void> _upload(StoryProvider provider) async {
+    if (_formKey.currentState!.validate() && _imageFile != null) {
+      final result = await provider.addNewStory(
+        _descriptionController.text,
+        _imageFile!.path,
+      );
+      if (!mounted) return;
+      if (result) {
+        context.go('/');
+      } else {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(provider.uploadMessage),
+              backgroundColor: Colors.red,
+            ),
+          );
+      }
+    } else if (_imageFile == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(tr('error_no_image')),
+            backgroundColor: Colors.red,
+          ),
+        );
+    }
   }
 
   @override
@@ -91,8 +123,11 @@ class _AddStoryPageState extends State<AddStoryPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_a_photo,
-                                color: Colors.grey[600], size: 50),
+                            Icon(
+                              Icons.add_a_photo,
+                              color: Colors.grey[600],
+                              size: 50,
+                            ),
                             const SizedBox(height: 8),
                             Text(
                               tr('choose_image_button'),
@@ -136,38 +171,7 @@ class _AddStoryPageState extends State<AddStoryPage> {
                     ),
                     onPressed: provider.isUploading
                         ? null
-                        : () async {
-                            if (_formKey.currentState!.validate() &&
-                                _imageFile != null) {
-                              final result = await provider.addNewStory(
-                                _descriptionController.text,
-                                _imageFile!.path,
-                              );
-                              if (mounted) {
-                                if (result) {
-                                  context.go('/');
-                                } else {
-                                  ScaffoldMessenger.of(context)
-                                    ..hideCurrentSnackBar()
-                                    ..showSnackBar(
-                                      SnackBar(
-                                        content: Text(provider.uploadMessage),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                }
-                              }
-                            } else if (_imageFile == null) {
-                              ScaffoldMessenger.of(context)
-                                ..hideCurrentSnackBar()
-                                ..showSnackBar(
-                                  SnackBar(
-                                    content: Text(tr('error_no_image')),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                            }
-                          },
+                        : () => _upload(provider),
                     icon: provider.isUploading
                         ? Container(
                             width: 24,

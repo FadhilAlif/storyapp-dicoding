@@ -28,6 +28,25 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  Future<void> _register(AuthProvider authProvider) async {
+    if (_formKey.currentState!.validate()) {
+      final result = await authProvider.register(
+        _nameController.text,
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(authProvider.message)));
+        if (result) {
+          context.go('/login');
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,32 +117,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     return ElevatedButton(
                       onPressed: authProvider.isLoading
                           ? null
-                          : () async {
-                              if (_formKey.currentState!.validate()) {
-                                final result = await authProvider.register(
-                                  _nameController.text,
-                                  _emailController.text,
-                                  _passwordController.text,
-                                );
-
-                                if (mounted) {
-                                  ScaffoldMessenger.of(context)
-                                    ..hideCurrentSnackBar()
-                                    ..showSnackBar(
-                                      SnackBar(
-                                        content: Text(authProvider.message),
-                                      ),
-                                    );
-                                  if (result) {
-                                    context.go('/login');
-                                  }
-                                }
-                              }
-                            },
+                          : () => _register(authProvider),
                       child: authProvider.isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
+                          ? const CircularProgressIndicator(color: Colors.white)
                           : Text(tr('register_button')),
                     );
                   },

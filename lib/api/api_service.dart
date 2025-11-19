@@ -7,10 +7,14 @@ import 'package:storyapp_dicoding/data/model/story_detail_response.dart';
 import 'package:storyapp_dicoding/data/model/story_response.dart';
 
 class ApiService {
-  static const String _baseUrl = 'https://story-api.dicoding.dev/v1';
+  // Hardcoded Base URL untuk API
+  static const _baseUrl = 'https://story-api.dicoding.dev/v1';
 
   Future<RegisterResponse> register(
-      String name, String email, String password) async {
+    String name,
+    String email,
+    String password,
+  ) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/register'),
       headers: <String, String>{
@@ -31,10 +35,7 @@ class ApiService {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
-        'email': email,
-        'password': password,
-      }),
+      body: jsonEncode(<String, String>{'email': email, 'password': password}),
     );
     return LoginResponse.fromJson(jsonDecode(response.body));
   }
@@ -42,9 +43,7 @@ class ApiService {
   Future<StoryResponse> getStories(String token) async {
     final response = await http.get(
       Uri.parse('$_baseUrl/stories'),
-      headers: <String, String>{
-        'Authorization': 'Bearer $token',
-      },
+      headers: <String, String>{'Authorization': 'Bearer $token'},
     );
     return StoryResponse.fromJson(jsonDecode(response.body));
   }
@@ -52,15 +51,16 @@ class ApiService {
   Future<StoryDetailResponse> getStoryDetail(String id, String token) async {
     final response = await http.get(
       Uri.parse('$_baseUrl/stories/$id'),
-      headers: <String, String>{
-        'Authorization': 'Bearer $token',
-      },
+      headers: <String, String>{'Authorization': 'Bearer $token'},
     );
     return StoryDetailResponse.fromJson(jsonDecode(response.body));
   }
 
   Future<AddStoryResponse> addNewStory(
-      String token, String description, String filePath) async {
+    String token,
+    String description,
+    String filePath,
+  ) async {
     final uri = Uri.parse('$_baseUrl/stories');
     final request = http.MultipartRequest('POST', uri);
 

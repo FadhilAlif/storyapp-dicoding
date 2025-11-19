@@ -17,7 +17,7 @@ class AppRouter {
       refreshListenable: authProvider,
       redirect: (BuildContext context, GoRouterState state) {
         final bool isLoggedIn = authProvider.isLoggedIn;
-        
+
         final loggingIn = state.matchedLocation == '/login';
         final registering = state.matchedLocation == '/register';
 
@@ -35,18 +35,19 @@ class AppRouter {
       },
       routes: <RouteBase>[
         GoRoute(
-            path: '/',
-            builder: (BuildContext context, GoRouterState state) {
-              return const HomePage();
-            },
-            routes: [
-              GoRoute(
-                path: 'story/:id',
-                builder: (BuildContext context, GoRouterState state) {
-                  return StoryDetailPage(storyId: state.pathParameters['id']!);
-                },
-              ),
-            ]),
+          path: '/',
+          builder: (BuildContext context, GoRouterState state) {
+            return const HomePage();
+          },
+          routes: [
+            GoRoute(
+              path: 'story/:id',
+              builder: (BuildContext context, GoRouterState state) {
+                return StoryDetailPage(storyId: state.pathParameters['id']!);
+              },
+            ),
+          ],
+        ),
         GoRoute(
           path: '/add-story',
           builder: (BuildContext context, GoRouterState state) {
@@ -66,11 +67,8 @@ class AppRouter {
           },
         ),
       ],
-      errorBuilder: (context, state) => Scaffold(
-        body: Center(
-          child: Text('Page not found: ${state.error}'),
-        ),
-      ),
+      errorBuilder: (context, state) =>
+          Scaffold(body: Center(child: Text('Page not found: ${state.error}'))),
     );
   }
 }

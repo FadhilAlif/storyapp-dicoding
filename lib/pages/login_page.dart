@@ -26,13 +26,27 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  Future<void> _login(AuthProvider authProvider) async {
+    if (_formKey.currentState!.validate()) {
+      final result = await authProvider.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      if (mounted) {
+        if (!result) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(authProvider.message)));
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(tr('login_title')),
-        actions: const [LanguageSwitcherWidget()],
-      ),
+      appBar: AppBar(actions: const [LanguageSwitcherWidget()]),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -42,6 +56,12 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Text(
+                  tr('login_page'),
+                  style: Theme.of(context).textTheme.headlineMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
@@ -85,30 +105,9 @@ class _LoginPageState extends State<LoginPage> {
                     return ElevatedButton(
                       onPressed: authProvider.isLoading
                           ? null
-                          : () async {
-                              if (_formKey.currentState!.validate()) {
-                                final result = await authProvider.login(
-                                  _emailController.text,
-                                  _passwordController.text,
-                                );
-
-                                if (mounted) {
-                                  if (!result) {
-                                    ScaffoldMessenger.of(context)
-                                      ..hideCurrentSnackBar()
-                                      ..showSnackBar(
-                                        SnackBar(
-                                          content: Text(authProvider.message),
-                                        ),
-                                      );
-                                  }
-                                }
-                              }
-                            },
+                          : () => _login(authProvider),
                       child: authProvider.isLoading
-                          ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
+                          ? const CircularProgressIndicator(color: Colors.white)
                           : Text(tr('login_button')),
                     );
                   },

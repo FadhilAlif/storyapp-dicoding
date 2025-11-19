@@ -18,12 +18,12 @@ class Story {
   });
 
   factory Story.fromJson(Map<String, dynamic> json) => Story(
-        id: json["id"],
-        name: json["name"],
-        description: json["description"],
-        photoUrl: json["photoUrl"],
-        createdAt: DateTime.parse(json["createdAt"]),
-        lat: json["lat"]?.toDouble(),
-        lon: json["lon"]?.toDouble(),
-      );
+    id: json["id"],
+    name: json["name"],
+    description: json["description"],
+    photoUrl: json["photoUrl"],
+    createdAt: DateTime.parse(json["createdAt"]),
+    lat: json["lat"]?.toDouble(),
+    lon: json["lon"]?.toDouble(),
+  );
 }

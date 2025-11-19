@@ -44,7 +44,9 @@ class HomePage extends StatelessWidget {
                   final story = provider.stories[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     clipBehavior: Clip.antiAlias,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -63,19 +65,17 @@ class HomePage extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 const SizedBox(
-                              height: 200,
-                              child: Center(
-                                child: Icon(Icons.error, color: Colors.red),
-                              ),
-                            ),
+                                  height: 200,
+                                  child: Center(
+                                    child: Icon(Icons.error, color: Colors.red),
+                                  ),
+                                ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Text(
                               story.name,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
+                              style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ),

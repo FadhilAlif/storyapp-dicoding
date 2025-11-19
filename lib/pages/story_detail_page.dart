@@ -16,9 +16,12 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        Provider.of<StoryProvider>(context, listen: false)
-            .fetchStoryDetail(widget.storyId));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<StoryProvider>(
+        context,
+        listen: false,
+      ).fetchStoryDetail(widget.storyId);
+    });
   }
 
   @override

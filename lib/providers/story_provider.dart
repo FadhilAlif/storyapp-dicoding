@@ -89,8 +89,11 @@ class StoryProvider extends ChangeNotifier {
         _uploadMessage = 'Authentication token not found.';
         return false;
       }
-      final response =
-          await apiService.addNewStory(token, description, filePath);
+      final response = await apiService.addNewStory(
+        token,
+        description,
+        filePath,
+      );
       if (!response.error) {
         await refreshStories();
         return true;

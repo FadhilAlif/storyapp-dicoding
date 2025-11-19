@@ -11,10 +11,13 @@ class StoryResponse {
     required this.listStory,
   });
 
-  factory StoryResponse.fromJson(Map<String, dynamic> json) => StoryResponse(
-        error: json["error"],
-        message: json["message"],
-        listStory:
-            List<Story>.from(json["listStory"].map((x) => Story.fromJson(x))),
-      );
+  factory StoryResponse.fromJson(Map<String, dynamic> json) {
+    return StoryResponse(
+      error: json["error"],
+      message: json["message"],
+      listStory: List<Story>.from(
+        json["listStory"].map((x) => Story.fromJson(x)),
+      ),
+    );
+  }
 }

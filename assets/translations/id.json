@@ -1,6 +1,7 @@
 {
   "app_title": "Aplikasi Cerita",
   "login_title": "Masuk",
+  "login_page": "Halaman Masuk",
   "register_title": "Daftar",
   "home_title": "Daftar Cerita",
   "detail_title": "Detail Cerita",
