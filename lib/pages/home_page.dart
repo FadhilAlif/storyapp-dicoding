@@ -26,7 +26,7 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.go('/add-story');
+          context.push('/add-story');
         },
         child: const Icon(Icons.add),
       ),
@@ -53,7 +53,7 @@ class HomePage extends StatelessWidget {
                     ),
                     child: GestureDetector(
                       onTap: () {
-                        context.go('/story/${story.id}');
+                        context.push('/story/${story.id}');
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
