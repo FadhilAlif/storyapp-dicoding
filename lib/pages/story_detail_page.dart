@@ -1,5 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:geocoding/geocoding.dart' as geo;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +63,7 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
         content: Text(address),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: Text(tr('close_button')),
           ),
         ],
@@ -101,11 +104,11 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) =>
                           const SizedBox(
-                        height: 250,
-                        child: Center(
-                          child: Icon(Icons.error, color: Colors.red),
-                        ),
-                      ),
+                            height: 250,
+                            child: Center(
+                              child: Icon(Icons.error, color: Colors.red),
+                            ),
+                          ),
                     ),
                   ),
                   Padding(
@@ -139,6 +142,11 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
                             child: SizedBox(
                               height: 200,
                               child: GoogleMap(
+                                gestureRecognizers: {
+                                  Factory<OneSequenceGestureRecognizer>(
+                                    () => EagerGestureRecognizer(),
+                                  ),
+                                },
                                 initialCameraPosition: CameraPosition(
                                   target: LatLng(story.lat!, story.lon!),
                                   zoom: 15,
@@ -150,7 +158,9 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
                                     onTap: () async {
                                       if (_address == null) {
                                         await _getAddressFromLatLng(
-                                            story.lat!, story.lon!);
+                                          story.lat!,
+                                          story.lon!,
+                                        );
                                       }
                                       if (_address != null && mounted) {
                                         _showAddressDialog(_address!);
@@ -171,14 +181,18 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                const Icon(Icons.location_on,
-                                    size: 16, color: Colors.grey),
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
                                     _address!,
-                                    style:
-                                        Theme.of(context).textTheme.bodySmall,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall,
                                   ),
                                 ),
                               ],

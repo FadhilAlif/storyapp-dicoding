@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart' as geo;
@@ -109,14 +111,12 @@ class _AddStoryPageState extends State<AddStoryPage> {
 
       await _getAddressFromLatLng(latLng);
 
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(latLng, 15),
-      );
+      _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('location_error'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('location_error'))));
     } finally {
       setState(() => _isLoadingLocation = false);
     }
@@ -162,7 +162,7 @@ class _AddStoryPageState extends State<AddStoryPage> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                     ),
                   ],
                 ),
@@ -171,8 +171,14 @@ class _AddStoryPageState extends State<AddStoryPage> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: GoogleMap(
+                      gestureRecognizers: {
+                        Factory<OneSequenceGestureRecognizer>(
+                          () => EagerGestureRecognizer(),
+                        ),
+                      },
                       initialCameraPosition: CameraPosition(
-                        target: _selectedLocation ??
+                        target:
+                            _selectedLocation ??
                             const LatLng(-6.200000, 106.816666),
                         zoom: 12,
                       ),
@@ -205,8 +211,11 @@ class _AddStoryPageState extends State<AddStoryPage> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
-                        const Icon(Icons.location_on,
-                            size: 16, color: Colors.grey),
+                        const Icon(
+                          Icons.location_on,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -221,7 +230,7 @@ class _AddStoryPageState extends State<AddStoryPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _selectedLocation != null
-                        ? () => Navigator.pop(context)
+                        ? () => context.pop()
                         : null,
                     child: Text(tr('confirm_location')),
                   ),
@@ -371,14 +380,16 @@ class _AddStoryPageState extends State<AddStoryPage> {
                         children: [
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed:
-                                  _isLoadingLocation ? null : _getCurrentLocation,
+                              onPressed: _isLoadingLocation
+                                  ? null
+                                  : _getCurrentLocation,
                               icon: _isLoadingLocation
                                   ? const SizedBox(
                                       width: 16,
                                       height: 16,
                                       child: CircularProgressIndicator(
-                                          strokeWidth: 2),
+                                        strokeWidth: 2,
+                                      ),
                                     )
                                   : const Icon(Icons.my_location, size: 18),
                               label: Text(tr('use_current_location')),
@@ -421,8 +432,9 @@ class _AddStoryPageState extends State<AddStoryPage> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    onPressed:
-                        provider.isUploading ? null : () => _upload(provider),
+                    onPressed: provider.isUploading
+                        ? null
+                        : () => _upload(provider),
                     icon: provider.isUploading
                         ? Container(
                             width: 24,
