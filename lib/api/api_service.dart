@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:storyapp_dicoding/config/app_config.dart';
 import 'package:storyapp_dicoding/data/model/add_story_response.dart';
 import 'package:storyapp_dicoding/data/model/login_response.dart';
 import 'package:storyapp_dicoding/data/model/register_response.dart';
@@ -7,8 +8,7 @@ import 'package:storyapp_dicoding/data/model/story_detail_response.dart';
 import 'package:storyapp_dicoding/data/model/story_response.dart';
 
 class ApiService {
-  // Hardcoded Base URL untuk API
-  static const _baseUrl = 'https://story-api.dicoding.dev/v1';
+  String get _baseUrl => AppConfig.instance.baseUrl;
 
   Future<RegisterResponse> register(
     String name,
@@ -40,9 +40,14 @@ class ApiService {
     return LoginResponse.fromJson(jsonDecode(response.body));
   }
 
-  Future<StoryResponse> getStories(String token) async {
+  Future<StoryResponse> getStories(
+    String token, {
+    int page = 1,
+    int size = 10,
+    int location = 0,
+  }) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/stories'),
+      Uri.parse('$_baseUrl/stories?page=$page&size=$size&location=$location'),
       headers: <String, String>{'Authorization': 'Bearer $token'},
     );
     return StoryResponse.fromJson(jsonDecode(response.body));
@@ -59,13 +64,22 @@ class ApiService {
   Future<AddStoryResponse> addNewStory(
     String token,
     String description,
-    String filePath,
-  ) async {
+    String filePath, {
+    double? lat,
+    double? lon,
+  }) async {
     final uri = Uri.parse('$_baseUrl/stories');
     final request = http.MultipartRequest('POST', uri);
 
     request.headers['Authorization'] = 'Bearer $token';
     request.fields['description'] = description;
+
+    if (lat != null) {
+      request.fields['lat'] = lat.toString();
+    }
+    if (lon != null) {
+      request.fields['lon'] = lon.toString();
+    }
 
     final file = await http.MultipartFile.fromPath('photo', filePath);
     request.files.add(file);

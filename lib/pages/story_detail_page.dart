@@ -1,5 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart' as geo;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:storyapp_dicoding/providers/story_provider.dart';
 import 'package:storyapp_dicoding/widgets/language_switcher_widget.dart';
@@ -13,6 +15,9 @@ class StoryDetailPage extends StatefulWidget {
 }
 
 class _StoryDetailPageState extends State<StoryDetailPage> {
+  GoogleMapController? _mapController;
+  String? _address;
+
   @override
   void initState() {
     super.initState();
@@ -22,6 +27,45 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
         listen: false,
       ).fetchStoryDetail(widget.storyId);
     });
+  }
+
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _getAddressFromLatLng(double lat, double lon) async {
+    try {
+      final placemarks = await geo.placemarkFromCoordinates(lat, lon);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        setState(() {
+          _address =
+              '${place.street}, ${place.subLocality}, ${place.locality}, ${place.country}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _address = tr('address_not_found');
+      });
+    }
+  }
+
+  void _showAddressDialog(String address) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('location_info')),
+        content: Text(address),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(tr('close_button')),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -41,16 +85,27 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
             if (story == null) {
               return const Center(child: Text("Story not found."));
             }
+
+            final hasLocation = story.lat != null && story.lon != null;
+
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network(
-                    story.photoUrl,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Center(
-                      child: Icon(Icons.error, color: Colors.red),
+                  Hero(
+                    tag: 'story-image-${story.id}',
+                    child: Image.network(
+                      story.photoUrl,
+                      width: double.infinity,
+                      height: 250,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox(
+                        height: 250,
+                        child: Center(
+                          child: Icon(Icons.error, color: Colors.red),
+                        ),
+                      ),
                     ),
                   ),
                   Padding(
@@ -72,6 +127,64 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
                           story.description,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
+                        if (hasLocation) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            tr('location_label'),
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: SizedBox(
+                              height: 200,
+                              child: GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                  target: LatLng(story.lat!, story.lon!),
+                                  zoom: 15,
+                                ),
+                                markers: {
+                                  Marker(
+                                    markerId: const MarkerId('story_location'),
+                                    position: LatLng(story.lat!, story.lon!),
+                                    onTap: () async {
+                                      if (_address == null) {
+                                        await _getAddressFromLatLng(
+                                            story.lat!, story.lon!);
+                                      }
+                                      if (_address != null && mounted) {
+                                        _showAddressDialog(_address!);
+                                      }
+                                    },
+                                  ),
+                                },
+                                onMapCreated: (controller) {
+                                  _mapController = controller;
+                                  _getAddressFromLatLng(story.lat!, story.lon!);
+                                },
+                                zoomControlsEnabled: false,
+                                mapToolbarEnabled: false,
+                              ),
+                            ),
+                          ),
+                          if (_address != null) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on,
+                                    size: 16, color: Colors.grey),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    _address!,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
                       ],
                     ),
                   ),
@@ -79,7 +192,21 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
               ),
             );
           } else if (state == ResultState.error) {
-            return Center(child: Text(provider.message));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(provider.message),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => provider.fetchStoryDetail(widget.storyId),
+                    child: Text(tr('retry_button')),
+                  ),
+                ],
+              ),
+            );
           } else {
             return const Center(child: Text(""));
           }

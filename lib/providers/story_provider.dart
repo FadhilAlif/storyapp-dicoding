@@ -31,8 +31,18 @@ class StoryProvider extends ChangeNotifier {
   String _uploadMessage = '';
   String get uploadMessage => _uploadMessage;
 
+  int _page = 1;
+  final int _pageSize = 10;
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
+
+  bool _isLoadingMore = false;
+  bool get isLoadingMore => _isLoadingMore;
+
   Future<void> _fetchStories() async {
     _state = ResultState.loading;
+    _page = 1;
+    _hasMore = true;
     notifyListeners();
     try {
       final token = await authPreferences.getToken();
@@ -42,18 +52,55 @@ class StoryProvider extends ChangeNotifier {
         notifyListeners();
         return;
       }
-      final response = await apiService.getStories(token);
+      final response = await apiService.getStories(
+        token,
+        page: _page,
+        size: _pageSize,
+      );
       if (response.listStory.isEmpty) {
         _state = ResultState.noData;
         _message = 'No stories found.';
+        _hasMore = false;
       } else {
         _state = ResultState.hasData;
         _stories = response.listStory;
+        _hasMore = response.listStory.length >= _pageSize;
       }
     } catch (e) {
       _state = ResultState.error;
       _message = 'Failed to load stories. Please check your connection.';
     } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadMoreStories() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      final token = await authPreferences.getToken();
+      if (token == null) return;
+
+      _page++;
+      final response = await apiService.getStories(
+        token,
+        page: _page,
+        size: _pageSize,
+      );
+
+      if (response.listStory.isEmpty) {
+        _hasMore = false;
+      } else {
+        _stories.addAll(response.listStory);
+        _hasMore = response.listStory.length >= _pageSize;
+      }
+    } catch (e) {
+      _page--;
+    } finally {
+      _isLoadingMore = false;
       notifyListeners();
     }
   }
@@ -80,7 +127,12 @@ class StoryProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> addNewStory(String description, String filePath) async {
+  Future<bool> addNewStory(
+    String description,
+    String filePath, {
+    double? lat,
+    double? lon,
+  }) async {
     _isUploading = true;
     notifyListeners();
     try {
@@ -93,6 +145,8 @@ class StoryProvider extends ChangeNotifier {
         token,
         description,
         filePath,
+        lat: lat,
+        lon: lon,
       );
       if (!response.error) {
         await refreshStories();

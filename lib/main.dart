@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:storyapp_dicoding/api/api_service.dart';
+import 'package:storyapp_dicoding/config/app_config.dart';
 import 'package:storyapp_dicoding/data/preferences/auth_preferences.dart';
 import 'package:storyapp_dicoding/providers/auth_provider.dart';
 import 'package:storyapp_dicoding/providers/story_provider.dart';
@@ -11,6 +12,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
+  AppConfig(
+    flavor: Flavor.prod,
+    appName: 'Story App',
+    baseUrl: 'https://story-api.dicoding.dev/v1',
+  );
+
+  runMyApp();
+}
+
+void runMyApp() {
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('id')],
@@ -45,7 +56,7 @@ class MyApp extends StatelessWidget {
         builder: (context) {
           final router = AppRouter.getRouter(context);
           return MaterialApp.router(
-            title: 'Story App',
+            title: AppConfig.instance.appName,
             theme: ThemeData(
               primarySwatch: Colors.blue,
               visualDensity: VisualDensity.adaptivePlatformDensity,

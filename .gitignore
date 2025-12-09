@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Secrets - API Keys (do not commit)
+**/ios/Runner/Secrets.plist
+**/android/local.properties
